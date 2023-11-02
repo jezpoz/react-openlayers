@@ -1,13 +1,16 @@
 import { useContext, useEffect, useState } from "react";
 import { MapContext } from "../context/MapContext";
-import TileLayer from "ol/layer/Tile";
 import { Extent } from "ol/extent";
-import TileSource from "ol/source/Tile";
+import { OrderFunction } from "ol/render";
+import { StyleLike } from "ol/style/Style";
+import { BackgroundColor } from "ol/layer/Base";
+import VectorTileLayer from "ol/layer/VectorTile";
+import VectorTile from "ol/source/VectorTile";
 import BaseEvent from "ol/events/Event";
 import { ObjectEvent } from "ol/Object";
 import RenderEvent from "ol/render/Event";
 
-interface TileComponentProps {
+interface VectorTileLayerProps {
   className?: string;
   opacity?: number;
   visible?: boolean;
@@ -17,17 +20,22 @@ interface TileComponentProps {
   maxResolution?: number;
   minZoom?: number;
   maxZoom?: number;
-  preload?: number;
-  source?: TileSource;
-  useInterimTilesOnError?: boolean;
+  renderOrder?: OrderFunction;
+  renderBuffer?: number;
+  source?: VectorTile;
+  declutter?: boolean;
+  style?: StyleLike | null;
+  background?: BackgroundColor;
+  updateWhileAnimating?: boolean;
+  updateWhileInteracting?: boolean;
   properties?: {
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     [key: string]: any;
   }[];
-  events?: TileLayerEvents;
+  events?: VectorTileLayerEvents;
 }
 
-interface TileLayerEvents {
+interface VectorTileLayerEvents {
   change?: (event: BaseEvent) => void; // - Generic change event. Triggered when the revision counter is increased.
   "change:extent"?: (event: ObjectEvent) => void;
   "change:maxResolution"?: (event: ObjectEvent) => void;
@@ -47,7 +55,7 @@ interface TileLayerEvents {
   sourceready?: (event: BaseEvent) => void;
 }
 
-export function TileLayerComponent({
+export function VectorTileLayerComponent({
   className,
   opacity,
   visible,
@@ -57,14 +65,19 @@ export function TileLayerComponent({
   maxResolution,
   minZoom,
   maxZoom,
-  preload,
+  renderOrder,
+  renderBuffer,
   source,
-  useInterimTilesOnError,
+  declutter,
+  style,
+  background,
+  updateWhileAnimating,
+  updateWhileInteracting,
   properties,
   events,
-}: TileComponentProps) {
+}: VectorTileLayerProps) {
   const [layer] = useState(
-    new TileLayer({
+    new VectorTileLayer({
       className,
       opacity,
       visible,
@@ -74,9 +87,14 @@ export function TileLayerComponent({
       maxResolution,
       minZoom,
       maxZoom,
-      preload,
+      renderOrder,
+      renderBuffer,
       source,
-      useInterimTilesOnError,
+      declutter,
+      style,
+      background,
+      updateWhileAnimating,
+      updateWhileInteracting,
       properties,
     })
   );

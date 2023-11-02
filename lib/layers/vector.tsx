@@ -1,13 +1,18 @@
 import { useContext, useEffect, useState } from "react";
 import { MapContext } from "../context/MapContext";
-import TileLayer from "ol/layer/Tile";
+import VectorLayer from "ol/layer/Vector";
 import { Extent } from "ol/extent";
-import TileSource from "ol/source/Tile";
+import VectorSource from "ol/source/Vector";
+import { OrderFunction } from "ol/render";
+import { StyleLike } from "ol/style/Style";
+import { FlatStyleLike } from "ol/style/flat";
+import { BackgroundColor } from "ol/layer/Base";
+import { Geometry } from "ol/geom";
 import BaseEvent from "ol/events/Event";
 import { ObjectEvent } from "ol/Object";
 import RenderEvent from "ol/render/Event";
 
-interface TileComponentProps {
+interface VectorLayerProps {
   className?: string;
   opacity?: number;
   visible?: boolean;
@@ -17,17 +22,22 @@ interface TileComponentProps {
   maxResolution?: number;
   minZoom?: number;
   maxZoom?: number;
-  preload?: number;
-  source?: TileSource;
-  useInterimTilesOnError?: boolean;
+  renderOrder?: OrderFunction;
+  renderBuffer?: number;
+  source?: VectorSource<Geometry>;
+  declutter?: boolean;
+  style?: StyleLike | FlatStyleLike | null;
+  background?: BackgroundColor;
+  updateWhileAnimating?: boolean;
+  updateWhileInteracting?: boolean;
   properties?: {
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     [key: string]: any;
   }[];
-  events?: TileLayerEvents;
+  events?: VectorLayerEvents;
 }
 
-interface TileLayerEvents {
+interface VectorLayerEvents {
   change?: (event: BaseEvent) => void; // - Generic change event. Triggered when the revision counter is increased.
   "change:extent"?: (event: ObjectEvent) => void;
   "change:maxResolution"?: (event: ObjectEvent) => void;
@@ -35,9 +45,7 @@ interface TileLayerEvents {
   "change:minResolution"?: (event: ObjectEvent) => void;
   "change:minZoom"?: (event: ObjectEvent) => void;
   "change:opacity"?: (event: ObjectEvent) => void;
-  "change:preload"?: (event: ObjectEvent) => void;
   "change:source"?: (event: ObjectEvent) => void;
-  "change:useInterimTilesOnError"?: (event: ObjectEvent) => void;
   "change:visible"?: (event: ObjectEvent) => void;
   "change:zIndex"?: (event: ObjectEvent) => void;
   error?: (event: BaseEvent) => void; //  Generic error event. Triggered when an error occurs.
@@ -47,7 +55,7 @@ interface TileLayerEvents {
   sourceready?: (event: BaseEvent) => void;
 }
 
-export function TileLayerComponent({
+export function VectorLayerComponent({
   className,
   opacity,
   visible,
@@ -57,14 +65,19 @@ export function TileLayerComponent({
   maxResolution,
   minZoom,
   maxZoom,
-  preload,
+  renderOrder,
+  renderBuffer,
   source,
-  useInterimTilesOnError,
+  declutter,
+  style,
+  background,
+  updateWhileAnimating,
+  updateWhileInteracting,
   properties,
   events,
-}: TileComponentProps) {
+}: VectorLayerProps) {
   const [layer] = useState(
-    new TileLayer({
+    new VectorLayer({
       className,
       opacity,
       visible,
@@ -74,9 +87,14 @@ export function TileLayerComponent({
       maxResolution,
       minZoom,
       maxZoom,
-      preload,
+      renderOrder,
+      renderBuffer,
       source,
-      useInterimTilesOnError,
+      declutter,
+      style,
+      background,
+      updateWhileAnimating,
+      updateWhileInteracting,
       properties,
     })
   );
@@ -87,9 +105,9 @@ export function TileLayerComponent({
       map.addLayer(layer);
     }
     if (events) {
-      Object.entries(events).forEach(([event, handler]) =>
-        layer.addEventListener(event, handler)
-      );
+      for (const [event, handler] of Object.entries(events)) {
+        layer.addEventListener(event, handler);
+      }
     }
     return () => {
       if (events) {
@@ -97,6 +115,7 @@ export function TileLayerComponent({
           layer.removeEventListener(event, handler)
         );
       }
+
       map?.removeLayer(layer);
     };
   }, [map, layer, events]);

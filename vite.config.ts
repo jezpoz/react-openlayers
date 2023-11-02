@@ -10,6 +10,11 @@ import { libInjectCss } from "vite-plugin-lib-inject-css";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), libInjectCss(), dts({ include: ["lib"] })],
+  resolve: {
+    alias: {
+      "react-overlayers": resolve(__dirname, "lib/main.ts"),
+    },
+  },
   build: {
     copyPublicDir: false,
     lib: {
