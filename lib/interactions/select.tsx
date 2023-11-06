@@ -58,7 +58,7 @@ export function SelectComponent({
       hitTolerance,
     })
   );
-  const { map } = useContext(MapContext);
+  const map = useContext(MapContext);
 
   useEffect(() => {
     if (map && !map.getInteractions().getArray().includes(select)) {

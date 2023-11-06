@@ -31,7 +31,7 @@ export function MapComponent({
   }, [map, view]);
 
   return (
-    <MapContext.Provider value={{ map }}>
+    <MapContext.Provider value={map}>
       <div ref={mapRef} style={{ width, height }}>
         {children}
       </div>

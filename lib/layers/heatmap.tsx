@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { MapContext } from "../context/MapContext";
+import { LayerGroupContext } from "../context/LayerGroupContext";
 import HeatMapLayer from "ol/layer/Heatmap";
 import { Extent } from "ol/extent";
 import VectorSource from "ol/source/Vector";
@@ -93,12 +94,21 @@ export function HeatMapLayerComponent({
       properties,
     })
   );
-  const { map } = useContext(MapContext);
+  const map = useContext(MapContext);
+  const layerGroup = useContext(LayerGroupContext);
 
   useEffect(() => {
-    if (map && !map.getAllLayers().includes(layer)) {
-      map.addLayer(layer);
+    if (layerGroup) {
+      const layers = layerGroup.getLayers();
+      if (!layers.getArray().includes(layer)) {
+        layers.push(layer);
+      }
+    } else {
+      if (map && !map.getAllLayers().includes(layer)) {
+        map.addLayer(layer);
+      }
     }
+
     if (events) {
       for (const [event, handler] of Object.entries(events)) {
         layer.addEventListener(event, handler);
@@ -111,9 +121,16 @@ export function HeatMapLayerComponent({
           layer.removeEventListener(event, handler)
         );
       }
-      map?.removeLayer(layer);
+
+      if (layerGroup) {
+        layerGroup.getLayers().remove(layer);
+      }
+
+      if (map) {
+        map.removeLayer(layer);
+      }
     };
-  }, [map, layer, events]);
+  }, [map, layer, events, layerGroup]);
 
   return null;
 }

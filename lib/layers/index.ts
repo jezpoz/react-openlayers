@@ -1,3 +1,5 @@
+import { GroupLayer } from "./group";
+
 import { HeatMapLayerComponent } from "./heatmap";
 import { ImageLayerComponent } from "./image";
 import { TileLayerComponent } from "./tile";
@@ -12,4 +14,4 @@ const Layers = {
   VectorTile: VectorTileLayerComponent,
 };
 
-export { Layers };
+export { Layers, GroupLayer };

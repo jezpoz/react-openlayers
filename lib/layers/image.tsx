@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { MapContext } from "../context/MapContext";
+import { LayerGroupContext } from "../context/LayerGroupContext";
 import ImageLayer from "ol/layer/Image";
 import { Extent } from "ol/extent";
 import ImageSource from "ol/source/Image";
@@ -72,11 +73,19 @@ export function ImageLayerComponent({
       properties,
     })
   );
-  const { map } = useContext(MapContext);
+  const map = useContext(MapContext);
+  const layerGroup = useContext(LayerGroupContext);
 
   useEffect(() => {
-    if (map && !map.getAllLayers().includes(layer)) {
-      map.addLayer(layer);
+    if (layerGroup) {
+      const layers = layerGroup.getLayers();
+      if (!layers.getArray().includes(layer)) {
+        layers.push(layer);
+      }
+    } else {
+      if (map && !map.getAllLayers().includes(layer)) {
+        map.addLayer(layer);
+      }
     }
     if (events) {
       for (const [event, handler] of Object.entries(events)) {
@@ -89,9 +98,16 @@ export function ImageLayerComponent({
           layer.removeEventListener(event, handler)
         );
       }
-      map?.removeLayer(layer);
+
+      if (layerGroup) {
+        layerGroup.getLayers().remove(layer);
+      }
+
+      if (map) {
+        map.removeLayer(layer);
+      }
     };
-  }, [map, layer, events]);
+  }, [map, layer, events, layerGroup]);
 
   return null;
 }

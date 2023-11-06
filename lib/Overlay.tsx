@@ -42,7 +42,7 @@ export function OverlayComponent({
   events,
   children,
 }: OverlayProps) {
-  const { map } = useContext(MapContext);
+  const map = useContext(MapContext);
   const [overlay] = useState(
     new Overlay({
       id,
